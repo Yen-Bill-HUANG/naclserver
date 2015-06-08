@@ -13,4 +13,3 @@ How to set up and running the example web server:
 8.  Copy the www folder of George's web server into native_client/scons-out/nacl-x86-64/obj/tests/ncserver
 9.  Run the example from the directory native_client: "scons-out/nacl-x86-64/obj/tests/ncserver/ncserver scons-out/nacl-x86-64/obj/tests/ncserver/html_parser.nexe -b 127.0.0.1 -p 22334 -d scons-out/nacl-x86-64/obj/tests/ncserver/www"
 10.  You should now be able to see a response in your browser when you type in the address bar "localhost:22334"
-11.  
