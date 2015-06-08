@@ -1,11 +1,5 @@
 /*
- * Copyright (c) 2012 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-/*
- * This test program creates two NaCl sandboxes within the same host process.
+ * This test program integrates a web server into the host process and places the HTML parser into a NaCl sandbox.
  */
 
 #include <string.h>
