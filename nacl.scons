@@ -15,11 +15,11 @@ trusted_env = env['TRUSTED_ENV']
 
 runner = trusted_env.ComponentProgram(
     'ncserver', ['ncserver.c'],
-    EXTRA_LIBS=['sel'])
+    EXTRA_LIBS=['imc','sel'])
 
 test_prog = env.ComponentProgram(
     'html_parser', ['html_parser.c'],
-    EXTRA_LIBS=['imc_syscalls', '${NONIRT_LIBS}'])
+    EXTRA_LIBS=['imc','imc_syscalls', '${NONIRT_LIBS}'])
 
 # If we are generating a pexe, translate it first
 test_prog = env.GetTranslatedNexe(test_prog)

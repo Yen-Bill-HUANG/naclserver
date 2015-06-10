@@ -6,11 +6,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "native_client/src/shared/platform/conf.h"
 #include "native_client/src/shared/platform/macro.h"
 #include "native_client/src/shared/platform/ncwebserver.h"
 #include "native_client/src/shared/platform/usage.h"
+
+#include "native_client/src/public/imc_types.h"
+#include "native_client/src/public/imc_syscalls.h"
 
 #include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -24,8 +28,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+
 #define SEND_DESC 3
-#define RECEIVE_DESC 3
+// #define RECEIVE_DESC 3
 
 const char ncwebserver_usage_string[] = 
     "<executable file> [-h] [-d web-root] [-b bind-address] [-p port]";
@@ -70,8 +75,11 @@ int main(int argc, char **argv) {
   NaClHandle handle_pair[2];
   int i;
   char *domain1_args[] = {"prog", "domain1"};
-  char *domain2_args[] = {"prog", "domain2"};
+  // char *domain2_args[] = {"prog", "domain2"};
   int return_code;
+  char buffer[100];
+  NaClMessageHeader header;
+  NaClIOVec vec;
 
   struct ncwebserver_t server;
   struct ncwebserver_conf_t conf;
@@ -86,7 +94,7 @@ int main(int argc, char **argv) {
   nd = (struct NaClDesc *) NaClDescIoDescOpen(argv[1], NACL_ABI_O_RDONLY, 0);
   CHECK(NULL != nd);
 
-  for (i = 0; i < 2; i++) {
+  for (i = 0; i < 1; i++) {
     CHECK(NaClAppCtor(&app[i]));
 
     /* Use a smaller guest address space size, because 32-bit Windows
@@ -118,15 +126,29 @@ int main(int argc, char **argv) {
      output for the purpose of checking against the golden file. */
   CHECK(NaClSocketPair(handle_pair) == 0);
   NaClAddImcHandle(&app[0], handle_pair[0], SEND_DESC);
-  NaClAddImcHandle(&app[1], handle_pair[1], RECEIVE_DESC);
+  // NaClAddImcHandle(&app[1], handle_pair[1], RECEIVE_DESC);
 
   CHECK(NaClCreateMainThread(&app[0], 2, domain1_args, NULL));
-  CHECK(NaClCreateMainThread(&app[1], 2, domain2_args, NULL));
+  // CHECK(NaClCreateMainThread(&app[1], 2, domain2_args, NULL));
 
   return_code = NaClWaitForMainThreadToExit(&app[0]);
   CHECK(return_code == 101);
-  return_code = NaClWaitForMainThreadToExit(&app[1]);
-  CHECK(return_code == 102);
+  // return_code = NaClWaitForMainThreadToExit(&app[1]);
+  // CHECK(return_code == 102);
+
+  vec.base = buffer;
+  vec.length = sizeof buffer;
+
+  memset(buffer, 0, sizeof buffer);
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = NULL;
+  header.handle_count = 0;
+  return_code = NaClReceiveDatagram(handle_pair[1], &header, 0);
+  printf("%d\n",return_code);
+  assert(return_code == sizeof buffer);
+
+  printf("Server received: %s\n", buffer+16);
 
   memset(&conf, 0, sizeof(conf));
   parse_argv(argc, argv, &conf);
